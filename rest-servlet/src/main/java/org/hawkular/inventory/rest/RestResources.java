@@ -37,6 +37,7 @@ import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -58,7 +59,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Produces(value = APPLICATION_JSON)
 @Consumes(value = APPLICATION_JSON)
 @Api(value = "/", description = "Resources CRUD")
-public class RestResources {
+public class RestResources extends AbstractRest {
 
     @Inject @ForRest
     private Inventory inventory;
@@ -87,6 +88,13 @@ public class RestResources {
                 .create(b);
 
         return ResponseUtil.created(uriInfo, resource.getId()).build();
+    }
+
+    @OPTIONS
+    @Path("/{tenantId}/{environmentId}/resources")
+    public Response defaultOptions(@PathParam("tenantId") String tenantId,
+                                   @PathParam("environmentId") String environmentId) {
+        return super.defaultOptions();
     }
 
     // TODO the is one of the few bits of querying in the API. How should we go about it generally?
@@ -148,6 +156,14 @@ public class RestResources {
         return Response.noContent().build();
     }
 
+    @OPTIONS
+    @Path("/{tenantId}/{environmentId}/resources/{resourceId}")
+    public Response defaultOptions2(@PathParam("tenantId") String tenantId,
+                                    @PathParam("environmentId") String environmentId,
+                                    @PathParam("resourceId") String resourceId) {
+        return super.defaultOptions();
+    }
+
 
     @POST
     @Path("/{tenantId}/{environmentId}/resources/{resourceId}/metrics/")
@@ -168,6 +184,14 @@ public class RestResources {
         metricIds.forEach(metricDao::add);
 
         return Response.noContent().build();
+    }
+
+    @OPTIONS
+    @Path("/{tenantId}/{environmentId}/resources/{resourceId}/metrics/")
+    public Response defaultOptions3(@PathParam("tenantId") String tenantId,
+                                    @PathParam("environmentId") String environmentId,
+                                    @PathParam("resourceId") String resourceId) {
+        return super.defaultOptions();
     }
 
     @GET
@@ -207,4 +231,14 @@ message = "Tenant, environment, resource or metric doesn't exist or if the metri
                 .metrics().get(metricId).entity();
         return Response.ok(m).build();
     }
+
+
+//    /{tenantId}/{environmentId}/resources
+//    /{tenantId}/{environmentId}/resources/{resourceId}
+//    /{tenantId}/{environmentId}/resources/{resourceId}/metrics/
+//    @OPTIONS
+//    @Path("{var:/{tenantId}/{environmentId}/resources(/{resourceId}(/metrics/)?)?")
+//    public Response defaultOptions() {
+//        return super.defaultOptions();
+//    }
 }

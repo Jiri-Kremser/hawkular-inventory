@@ -34,6 +34,7 @@ import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -53,7 +54,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Produces(APPLICATION_JSON)
 @Consumes(APPLICATION_JSON)
 @Api(value = "/", description = "Resource type CRUD")
-public class RestResourceTypes {
+public class RestResourceTypes extends AbstractRest {
 
     @Inject @ForRest
     private Inventory inventory;
@@ -136,6 +137,12 @@ public class RestResourceTypes {
         return ResponseUtil.created(uriInfo, resourceType.getId()).build();
     }
 
+    @OPTIONS
+    @Path("/{tenantId}/resourceTypes")
+    public Response defaultOptions(@PathParam("tenantId") String tenantId) {
+        return super.defaultOptions();
+    }
+
     @DELETE
     @Path("/{tenantId}/resourceTypes/{resourceTypeId}")
     @ApiOperation("Deletes a resource type")
@@ -148,6 +155,13 @@ public class RestResourceTypes {
                            @PathParam("resourceTypeId") String resourceTypeId) {
         inventory.tenants().get(tenantId).resourceTypes().delete(resourceTypeId);
         return Response.noContent().build();
+    }
+
+    @OPTIONS
+    @Path("/{tenantId}/resourceTypes/{resourceTypeId}")
+    public Response defaultOption2(@PathParam("tenantId") String tenantId,
+                                    @PathParam("resourceTypeId") String resourceTypeId) {
+        return super.defaultOptions();
     }
 
     @POST
@@ -167,6 +181,13 @@ public class RestResourceTypes {
         return Response.noContent().build();
     }
 
+    @OPTIONS
+    @Path("/{tenantId}/resourceTypes/{resourceTypeId}/metricTypes")
+    public Response defaultOptions(@PathParam("tenantId") String tenantId,
+                                    @PathParam("resourceTypeId") String resourceTypeId) {
+        return super.defaultOptions();
+    }
+
     @DELETE
     @Path("/{tenantId}/resourceTypes/{resourceTypeId}/metricTypes/{metricTypeId}")
     @ApiOperation("Disassociates the resource type with a metric type")
@@ -182,4 +203,23 @@ public class RestResourceTypes {
         inventory.tenants().get(tenantId).resourceTypes().get(resourceTypeId).metricTypes().remove(metricTypeId);
         return Response.noContent().build();
     }
+
+    @OPTIONS
+    @Path("/{tenantId}/resourceTypes/{resourceTypeId}/metricTypes/{metricTypeId}")
+    public Response defaultOptions(@PathParam("tenantId") String tenantId,
+                                    @PathParam("resourceTypeId") String resourceTypeId,
+                                    @PathParam("metricTypeId") String metricTypeId) {
+        return super.defaultOptions();
+    }
+
+
+//    /{tenantId}/resourceTypes/{resourceTypeId}/metricTypes
+//    /{tenantId}/resourceTypes/{resourceTypeId}/metricTypes/{metricTypeId}
+//    /{tenantId}/resourceTypes/{resourceTypeId}
+//    /{tenantId}/resourceTypes
+//    @OPTIONS
+//    @Path("{var:/{tenantId}/resourceTypes(/{resourceTypeId}/metricTypes(/{metricTypeId})?)?")
+//    public Response defaultOptions() {
+//        return super.defaultOptions();
+//    }
 }

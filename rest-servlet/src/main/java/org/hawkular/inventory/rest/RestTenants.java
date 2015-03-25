@@ -31,6 +31,7 @@ import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -51,7 +52,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Produces(APPLICATION_JSON)
 @Consumes(APPLICATION_JSON)
 @Api(value = "/tenants", description = "CRUD for tenants")
-public class RestTenants {
+public class RestTenants extends AbstractRest {
 
     @Inject @ForRest
     private Inventory inventory;
@@ -113,4 +114,16 @@ public class RestTenants {
         inventory.tenants().delete(tenantId);
         return Response.noContent().build();
     }
+
+    @OPTIONS
+    @Path("/{tenantId}")
+    public Response defaultOptions(@PathParam("tenantId") String tenantId) {
+        return super.defaultOptions();
+    }
+
+//    @OPTIONS
+//    @Path("{var:/|/{tenantId}}")
+//    public Response defaultOptions() {
+//        return super.defaultOptions();
+//    }
 }

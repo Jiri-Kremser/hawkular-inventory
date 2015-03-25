@@ -31,6 +31,7 @@ import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -52,7 +53,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Produces(value = APPLICATION_JSON)
 @Consumes(value = APPLICATION_JSON)
 @Api(value = "/", description = "CRUD of environments.")
-public class RestEnvironments {
+public class RestEnvironments extends AbstractRest {
 
     @Inject @ForRest
     private Inventory inventory;
@@ -98,6 +99,12 @@ public class RestEnvironments {
         return ResponseUtil.created(uriInfo, environmentId.getId()).build();
     }
 
+    @OPTIONS
+    @Path("/{tenantId}/environments")
+    public Response defaultOptions(@PathParam("tenantId") String tenantId) {
+        return super.defaultOptions();
+    }
+
     @PUT
     @Path("/{tenantId}/environments/{environmentId}")
     @ApiOperation("Updates properties of the environment")
@@ -113,6 +120,13 @@ public class RestEnvironments {
         env.getProperties().putAll(properties);
 
         inventory.tenants().get(tenantId).environments().update(env);
+    }
+
+    @OPTIONS
+    @Path("/{tenantId}/environments/{environmentId}")
+    public Response defaultOptions(@PathParam("tenantId") String tenantId,
+                                   @PathParam("environmentId") String environmentId) {
+        return super.defaultOptions();
     }
 
     @DELETE
@@ -131,4 +145,12 @@ public class RestEnvironments {
         inventory.tenants().get(tenantId).environments().delete(environmentId);
         return Response.noContent().build();
     }
+
+//    /{tenantId}/environments
+//    /{tenantId}/environments/{environmentId}
+//    @OPTIONS
+//    @Path("{var:/{tenantId}/environments(/{environmentId})?")
+//    public Response defaultOptions() {
+//        return super.defaultOptions();
+//    }
 }

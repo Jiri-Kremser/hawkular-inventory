@@ -33,6 +33,7 @@ import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -53,7 +54,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Produces(value = APPLICATION_JSON)
 @Consumes(value = APPLICATION_JSON)
 @Api(value = "/", description = "Metrics CRUD")
-public class RestMetrics {
+public class RestMetrics extends AbstractRest {
 
     @Inject @ForRest
     private Inventory inventory;
@@ -91,6 +92,13 @@ public class RestMetrics {
         inventory.tenants().get(tenantId).environments().get(environmentId).metrics().create(b);
 
         return ResponseUtil.created(uriInfo, metric.getId()).build();
+    }
+
+    @OPTIONS
+    @Path("/{tenantId}/{environmentId}/metrics")
+    public Response defaultOptions(@PathParam("tenantId") String tenantId,
+                                   @PathParam("environmentId") String environmentId) {
+        return super.defaultOptions();
     }
 
     @GET
@@ -147,6 +155,14 @@ public class RestMetrics {
         return Response.noContent().build();
     }
 
+    @OPTIONS
+    @Path("/{tenantId}/{environmentId}/metrics/{metricId}")
+    public Response defaultOptions(@PathParam("tenantId") String tenantId,
+                                   @PathParam("environmentId") String environmentId,
+                                   @PathParam("metricId") String metricId) {
+        return super.defaultOptions();
+    }
+
     @DELETE
     @Path("/{tenantId}/{environmentId}/metrics/{metricId}")
     @ApiOperation("Deletes a metric")
@@ -164,4 +180,12 @@ public class RestMetrics {
         inventory.tenants().get("tenantId").environments().get("environmentId").metrics().delete(metricId);
         return Response.noContent().build();
     }
+
+//    /{tenantId}/{environmentId}/metrics/{metricId}
+//    /{tenantId}/{environmentId}/metrics
+//    @OPTIONS
+//    @Path("{var:/{tenantId}/{environmentId}/metrics(/{metricId})?")
+//    public Response defaultOptions() {
+//        return super.defaultOptions();
+//    }
 }

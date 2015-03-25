@@ -33,6 +33,7 @@ import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -53,7 +54,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Produces(value = APPLICATION_JSON)
 @Consumes(value = APPLICATION_JSON)
 @Api(value = "/", description = "Metric types CRUD")
-public class RestMetricTypes {
+public class RestMetricTypes extends AbstractRest {
 
     @Inject @ForRest
     private Inventory inventory;
@@ -104,6 +105,12 @@ public class RestMetricTypes {
         return ResponseUtil.created(uriInfo, metricType.getId()).build();
     }
 
+    @OPTIONS
+    @Path("/{tenantId}/metricTypes")
+    public Response defaultOptions(@PathParam("tenantId") String tenantId) {
+        return super.defaultOptions();
+    }
+
     @PUT
     @Path("/{tenantId}/metricTypes/{metricTypeId}")
     @ApiOperation("Updates a metric type")
@@ -125,6 +132,13 @@ public class RestMetricTypes {
         return Response.noContent().build();
     }
 
+    @OPTIONS
+    @Path("/{tenantId}/metricTypes/{metricTypeId}")
+    public Response defaultOptions(@PathParam("tenantId") String tenantId,
+                                   @PathParam("metricTypeId") String metricTypeId) {
+        return super.defaultOptions();
+    }
+
     @DELETE
     @Path("/{tenantId}/metricTypes/{metricTypeId}")
     @ApiOperation("Deletes a metric type")
@@ -142,4 +156,11 @@ public class RestMetricTypes {
         return Response.noContent().build();
     }
 
+//    /{tenantId}/metricTypes/{metricTypeId}
+//    /{tenantId}/metricTypes
+//    @OPTIONS
+//    @Path("{var:/{tenantId}/metricTypes(/{metricTypeId})?")
+//    public Response defaultOptions() {
+//        return super.defaultOptions();
+//    }
 }
