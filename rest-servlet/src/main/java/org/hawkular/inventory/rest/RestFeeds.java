@@ -16,6 +16,7 @@
  */
 package org.hawkular.inventory.rest;
 
+import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 import com.wordnik.swagger.annotations.ApiResponse;
@@ -25,17 +26,20 @@ import org.hawkular.inventory.api.model.Feed;
 import org.hawkular.inventory.api.paging.Page;
 import org.hawkular.inventory.rest.json.ApiError;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.Set;
 
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static org.hawkular.inventory.rest.RequestUtil.extractPaging;
 import static org.hawkular.inventory.rest.ResponseUtil.pagedResponse;
@@ -45,6 +49,9 @@ import static org.hawkular.inventory.rest.ResponseUtil.pagedResponse;
  * @since 0.0.1
  */
 @Path("/")
+@Produces(value = APPLICATION_JSON)
+@Consumes(value = APPLICATION_JSON)
+@Api(value = "/", description = "Feeds CRUD")
 public class RestFeeds extends RestBase {
 
     @POST
@@ -101,7 +108,7 @@ public class RestFeeds extends RestBase {
 
     @PUT
     @Path("/{tenantId}/{environmentId}/feeds/{feedId}")
-    @ApiOperation("Updates a metric")
+    @ApiOperation("Updates a feed")
     @ApiResponses({
             @ApiResponse(code = 204, message = "OK"),
             @ApiResponse(code = 404, message = "Tenant, environment or the feed doesn't exist",
