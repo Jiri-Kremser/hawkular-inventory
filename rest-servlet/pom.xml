@@ -194,18 +194,69 @@
         <!-- Document generation from the Swagger annotations on the REST-API. -->
         <plugins>
           <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>unpack</id>
+                <phase>process-resources</phase>
+                <goals>
+                  <goal>unpack</goal>
+                </goals>
+                <configuration>
+                  <artifactItems>
+                    <artifactItem>
+                      <groupId>org.hawkular</groupId>
+                      <artifactId>hawkular-build-tools</artifactId>
+                      <version>${version.org.hawkular.hawkular-build-tools}</version>
+                      <type>jar</type>
+                      <includes>**/*.mustache</includes>
+                    </artifactItem>
+                  </artifactItems>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
             <groupId>com.github.kongchen</groupId>
             <artifactId>swagger-maven-plugin</artifactId>
+            <version>3.0.0</version>
             <configuration>
               <apiSources>
                 <apiSource>
                   <locations>org.hawkular.inventory.rest</locations>
-                  <apiVersion>0.1</apiVersion>
-                  <basePath>http://localhost:8080/hawkular/inventory</basePath>
-                  <outputTemplate>https://raw.githubusercontent.com/hawkular/hawkular.github.io/swagger/asciidoc.mustache</outputTemplate>
+                  <schemes>http</schemes>
+                  <host>localhost:8080</host>
+                  <basePath>/hawkular/inventory</basePath>
+                  <info>
+                    <title>Hawkular Inventory</title>
+                    <description>REST API for the Hawkular Inventory component</description>
+                    <termsOfService>TBD</termsOfService>
+                    <contact>
+                      <name>API Support</name>
+                      <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+                      <email>hawkular-dev@lists.jboss.org</email>
+                    </contact>
+                    <license>
+                      <name>Apache 2.0</name>
+                      <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+                    </license>
+                    <version>0.1</version>
+                  </info>
+                  <!-- it will be available since plugin version 3.0.1
+                  <securityDefinitions>
+                    <securityDefinition>
+                      <name>BasicAuth</name>
+                      <type>basic</type>
+                    </securityDefinition>
+                  </securityDefinitions>
+                  -->
+                  <!--<templatePath>${project.build.directory}/dependency/hawkular-documentation/asciidoc.mustache</templatePath>-->
+                  <templatePath>/home/jkremser/markdown.hbs</templatePath>
                   <swaggerDirectory>${project.build.directory}/generated/swagger-ui</swaggerDirectory>
                   <swaggerApiReader>com.wordnik.swagger.jaxrs.reader.DefaultJaxrsApiReader</swaggerApiReader>
                   <outputPath>${project.build.directory}/generated/rest-inventory.adoc</outputPath>
+<!--                  <modelSubstitute></modelSubstitute>-->
                 </apiSource>
               </apiSources>
             </configuration>
