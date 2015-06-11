@@ -1,0 +1,52 @@
+{{#each securityDefinitions}}
+=== {{@key}}
+{{#this}}
+{{#ifeq type "oauth2"}}
+[options="header"]
+|=======================
+|type|2.+|{{type}}
+{{#if description}}
+|description|2.+|{{description}}
+{{/if}}
+{{#if authorizationUrl}}
+|authorizationUrl|2.+|{{authorizationUrl}}
+{{/if}}
+{{#if flow}}
+|flow|2.+|{{flow}}
+{{/if}}
+{{#if tokenUrl}}
+|tokenUrl|2.+|{{tokenUrl}}
+{{/if}}
+{{#if scopes}}
+|.3+|scopes{{#each scopes}}|{{@key}}|{{this}}{{/each}}
+{{/if}}
+|=======================
+{{/ifeq}}
+
+{{#ifeq type "apiKey"}}
+[options="header"]
+|=======================
+|type|2.+|{{type}}
+{{#if description}}
+|description|2.+|{{description}}
+{{/if}}
+{{#if name}}
+|name|2.+|{{name}}
+{{/if}}
+{{#if in}}
+|in|2.+|{{in}}
+{{/if}}
+|=======================
+{{/ifeq}}
+
+{{#ifeq type "basic"}}
+[options="header"]
+|=======================
+|type|2.+|{{type}}
+{{#if description}}
+|description|2.+|{{description}}
+{{/if}}
+|=======================
+{{/ifeq}}
+{{/this}}
+{{/each}}

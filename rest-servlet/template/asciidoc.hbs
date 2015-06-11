@@ -1,0 +1,91 @@
+{{#info}}
+
+== API Info
+[id="apiUrl"]
+=== {{join schemes " | "}}://{{host}}{{basePath}}
+
+
+NOTE: {{description}}
+
+{{#contact}}
+*Contact:* {{email}}"
+{{/contact}}
+
+*API Version:* {{version}}
+
+*Terms of Service:* {{termsOfService}}
+
+{{#license}}*License:* link:{{url}}[{{name}}]{{/license}}
+
+{{/info}}
+
+{{#if consumes}}*Consumes:* {{join consumes ", "}}{{/if}}
+
+{{#if produces}}*Produces:* {{join produces ", "}}{{/if}}
+
+{{#if securityDefinitions}}
+= Security Definitions
+{{/if}}
+{{> security}}
+
+= Endpoints
+
+{{#each paths}}
+== {{@key}}
+{{#get}}
+[id="getMethod"]
+*GET* `{{@key}}` _{{summary}}_
+{empty} +
+{{> operation this}}
+{{/get}}
+
+{{#put}}
+[id="putMethod"]
+*PUT* `{{@key}}` _{{summary}}_
+{{> operation this}}
+{{/put}}
+
+{{#post}}
+[id="postMethod"]
+*POST* `{{#../../../../..}}{{@key}}{{/../../../../..}}` _{{summary}}_
+{{> operation this}}
+{{/post}}
+
+{{#delete}}
+[id="deleteMethod"]
+*DELETE* `{{@key}}` _{{summary}}_
+{{> operation}}
+{{/delete}}
+
+{{#option}}
+[id="getMethod"]
+*OPTION* `{{@key}}` _{{summary}}_
+{{> operation}}
+{{/option}}
+
+{{#patch}}
+[id="putMethod"]
+*PATCH* `{{@key}}` _{{summary}}_
+{{> operation}}
+{{/patch}}
+
+{{#head}}
+[id="getMethod"]
+*HEAD* `{{@key}}` _{{summary}}_
+{{> operation}}
+{{/head}}
+
+{{/each}}
+
+= Definitions
+{{#each definitions}}
+== link:/definitions/{{key}}[{{@key}}]
+
+[options="header"]
+|=======================
+|name|type|required|description|example
+{{#each this.properties}}|{{@key}}|{{#ifeq type "array"}}{{#items.$ref}}{{type}}[link:{{items.$ref}}[{{basename items.$ref}}]]{{/items.$ref}}{{^items.$ref}}{{type}}[{{items.type}}]{{/items.$ref}}{{else}}{{#$ref}}link:{{$ref}}[{{basename $ref}}]{{/$ref}}{{^$ref}}{{type}}{{#format}} ({{format}}){{/format}}{{/$ref}}{{/ifeq}}|{{#required}}required{{/required}}{{^required}}optional{{/required}}|{{#description}}{{{description}}}{{/description}}{{^description}}-{{/description}}|{{example}}
+{{/each}}
+|=======================
+{{/each}}
+

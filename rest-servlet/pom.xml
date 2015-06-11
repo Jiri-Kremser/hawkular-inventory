@@ -252,7 +252,7 @@
                   </securityDefinitions>
                   -->
                   <!--<templatePath>${project.build.directory}/dependency/hawkular-documentation/asciidoc.mustache</templatePath>-->
-                  <templatePath>/home/jkremser/markdown.hbs</templatePath>
+                  <templatePath>${basedir}/template/asciidoc.hbs</templatePath>
                   <swaggerDirectory>${project.build.directory}/generated/swagger-ui</swaggerDirectory>
                   <swaggerApiReader>com.wordnik.swagger.jaxrs.reader.DefaultJaxrsApiReader</swaggerApiReader>
                   <outputPath>${project.build.directory}/generated/rest-inventory.adoc</outputPath>
