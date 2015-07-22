@@ -45,7 +45,7 @@
     <dependency>
       <groupId>org.hawkular.bus</groupId>
       <artifactId>hawkular-bus-common</artifactId>
-      <version>0.0.5</version>
+      <version>0.3.0.Final</version>
     </dependency>
 
     <!-- these will be provided by our RA - the MDB itself will never need ActiveMQ specific classes -->
@@ -55,22 +55,7 @@
       <version>${version.org.apache.activemq}</version>
       <scope>provided</scope>
     </dependency>
-
-    <dependency>
-      <groupId>org.apache.activemq</groupId>
-      <artifactId>activemq-jaas</artifactId>
-      <version>${version.org.apache.activemq}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.google.code.gson</groupId>
-      <artifactId>gson</artifactId>
-      <version>${version.com.google.code.gson}</version>
-      <scope>provided</scope>
-    </dependency>
   </dependencies>
-
   <build>
     <finalName>hawkular-${project.artifactId}-${project.version}</finalName>
   </build>
