@@ -94,6 +94,7 @@ abstract class SqlElement implements Element {
 
             synchronized (graph) {
                 transactionCountAtCacheCreation = graph.getTransactionCount();
+                Log.LOG.info("Caching properties.");
 
                 try {
                     PreparedStatement stmt = graph.getStatements().get(sql);

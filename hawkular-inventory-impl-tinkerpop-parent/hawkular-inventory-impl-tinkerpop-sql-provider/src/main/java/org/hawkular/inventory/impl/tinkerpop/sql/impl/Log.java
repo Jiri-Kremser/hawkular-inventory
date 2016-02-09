@@ -18,11 +18,16 @@ package org.hawkular.inventory.impl.tinkerpop.sql.impl;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.MessageLogger;
+import org.jboss.logging.annotations.ValidIdRange;
 
 /**
  * @author Lukas Krejci
  * @since 1.0
  */
+@MessageLogger(projectCode = "HAWKINV")
+//todo: the numbers may collide, I haven't checked properly
+@ValidIdRange(min = 30000, max = 34999)
 public interface Log extends BasicLogger {
     Log LOG = Logger.getMessageLogger(Log.class, "com.tinkerpop.blueprints.impl.sql");
 }

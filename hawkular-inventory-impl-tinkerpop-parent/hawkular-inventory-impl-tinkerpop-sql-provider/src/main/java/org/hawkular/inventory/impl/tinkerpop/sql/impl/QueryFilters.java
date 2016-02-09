@@ -151,7 +151,8 @@ final class QueryFilters {
     }
 
     private void appendFilters(String mainTable, String propsTable, String propsTableFK, StringBuilder bld,
-                               List<Object> params, String name, List<QueryFilters.OperatorAndValue> opValues, List<String> namesOnMainTable) {
+                               List<Object> params, String name, List<QueryFilters.OperatorAndValue> opValues,
+                               List<String> namesOnMainTable) {
 
         Iterator<QueryFilters.OperatorAndValue> it = opValues.iterator();
 
@@ -168,7 +169,8 @@ final class QueryFilters {
     }
 
     private void appendFilter(String mainTable, String propsTable, String propsTableFK, StringBuilder bld,
-                              List<Object> params, String name, QueryFilters.OperatorAndValue opValue, boolean isOnMainTable) {
+                              List<Object> params, String name, QueryFilters.OperatorAndValue opValue,
+                              boolean isOnMainTable) {
         Predicate operator = opValue.operator;
         Object value = opValue.object;
         ValueType valueType = ValueType.of(value, false);
@@ -187,7 +189,8 @@ final class QueryFilters {
                 break;
             case DOES_NOT_EXIST:
                 if (isOnMainTable) {
-                    //the property is on the main table (i.e. it's id or label (in case of an edge) and is always present
+                    //the property is on the main table (i.e. it's id or label (in case of an edge) and is always
+                    // present
                     bld.append("1 = 0");
                 } else {
                     propertyMatchPrologue(false, bld, mainTable, propsTable, propsTableFK)

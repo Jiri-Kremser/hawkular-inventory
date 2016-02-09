@@ -100,7 +100,8 @@ public final class SqlVertex extends SqlElement implements Vertex {
             sql.append("AND e.vertex_in = v.id ");
             addLabelConditions(sql, "e", labels);
             sql.append(
-                " UNION ALL SELECT e.id, e.vertex_in, e.vertex_out, e.label FROM edges e, vertices v WHERE v.id = ? AND e.vertex_out = v.id ");
+                    " UNION ALL SELECT e.id, e.vertex_in, e.vertex_out, e.label FROM edges e, vertices v " +
+                            "WHERE v.id = ? AND e.vertex_out = v.id ");
             break;
         }
 
@@ -150,7 +151,8 @@ public final class SqlVertex extends SqlElement implements Vertex {
         case BOTH:
             sql.append("e.vertex_in = ? AND e.vertex_out = v.id ");
             addLabelConditions(sql, "e", labels);
-            sql.append(" UNION ALL SELECT v.id FROM vertices v, edges e WHERE e.vertex_out = ? AND e.vertex_in = v.id ");
+            sql.append(" UNION ALL SELECT v.id FROM vertices v, edges e WHERE e.vertex_out = ?" +
+                    " AND e.vertex_in = v.id ");
             break;
         }
 

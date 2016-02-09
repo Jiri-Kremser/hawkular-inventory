@@ -46,7 +46,8 @@ class StatementIterable<T> implements CloseableIterable<T> {
         this(generator, graph, st, -1);
     }
 
-    StatementIterable(ElementGenerator<? extends T> generator, SqlGraph graph, PreparedStatement st, long artificialLimit) {
+    StatementIterable(ElementGenerator<? extends T> generator, SqlGraph graph, PreparedStatement st,
+                      long artificialLimit) {
         this.generator = generator;
         this.graph = graph;
         this.st = st;
