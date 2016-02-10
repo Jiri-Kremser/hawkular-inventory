@@ -32,13 +32,17 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import javax.sql.DataSource;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.MapConfiguration;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.tinkerpop.blueprints.CloseableIterable;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Features;
@@ -97,11 +101,15 @@ public final class SqlGraph implements ThreadedTransactionalGraph {
     private final String vertexPropertiesTableName;
     private final String edgePropertiesTableName;
     private final boolean loadPropertiesEagerly;
+    private final boolean lookahead;
     private final boolean closeConnectionOnTransactionEnd;
     private final boolean cacheStatements;
     private long transactionCount;
+    private LoadingCache<Long, WeakReference<SqlVertex>> vertexPropertiesCache;
+    private LoadingCache<Long, WeakReference<SqlVertex>> edgePropertiesCache;
 
-    private final WeakHashMap<Long, WeakReference<SqlVertex>> vertexCache = new WeakHashMap<>();
+
+    private final LoadingCache<Long, SqlVertex> vertexCache;
 
     /**
      * Instantiates a new SQL graph configured from the provided configuration object.
@@ -160,7 +168,7 @@ public final class SqlGraph implements ThreadedTransactionalGraph {
     }
 
     public SqlGraph(DataSource dataSource) {
-        this(dataSource, null, null, null, null, null, null, null);
+        this(dataSource, null, null, null, null, null, null, null, null);
     }
 
     public SqlGraph(DataSource dataSource, Configuration configuration) throws Exception {
@@ -169,21 +177,32 @@ public final class SqlGraph implements ThreadedTransactionalGraph {
                 configuration.getString("sql.vertexPropertiesTable"),
                 configuration.getString("sql.edgePropertiesTable"),
                 configuration.getBoolean("sql.loadPropertiesEagerly", null),
+                configuration.getBoolean("sql.lookahead", null),
                 configuration.getBoolean("sql.closeConnectionOnTransactionEnd", null),
                 configuration.getBoolean("sql.cacheStatements", null));
     }
 
     private SqlGraph(DataSource dataSource, String vTable, String eTable, String vpTable, String epTable,
-                     Boolean loadPropertiesEagerly, Boolean closeConnectionOnTransactionEnd, Boolean cacheStatements) {
+                     Boolean loadPropertiesEagerly, Boolean lookahead, Boolean closeConnectionOnTransactionEnd, Boolean
+                             cacheStatements) {
         this.dataSource = dataSource;
         verticesTableName = vTable == null ? "vertices" : vpTable;
         edgesTableName = eTable == null ? "edges" : eTable;
         vertexPropertiesTableName = vpTable == null ? "vertex_properties" : vpTable;
         edgePropertiesTableName = epTable == null ? "edge_properties" : epTable;
         this.loadPropertiesEagerly = loadPropertiesEagerly == null ? true : loadPropertiesEagerly;
+        this.lookahead = lookahead == null ? true : lookahead;
         this.closeConnectionOnTransactionEnd =
                 closeConnectionOnTransactionEnd == null ? false : closeConnectionOnTransactionEnd;
         this.cacheStatements = cacheStatements == null ? true : cacheStatements;
+        this.vertexCache = CacheBuilder.newBuilder()
+                .weakKeys()
+                .expireAfterWrite(5, TimeUnit.MINUTES)
+                .build(new CacheLoader<Long, SqlVertex>() {
+                    @Override public SqlVertex load(Long id) throws Exception {
+                        return getVertex(id);
+                    }
+                });
     }
 
     public synchronized void createSchemaIfNeeded() throws SQLException, IOException {
@@ -252,7 +271,8 @@ public final class SqlGraph implements ThreadedTransactionalGraph {
         }
 
         return new SqlGraph(dataSource, verticesTableName, edgesTableName, vertexPropertiesTableName,
-                edgePropertiesTableName, loadPropertiesEagerly, closeConnectionOnTransactionEnd, cacheStatements);
+                edgePropertiesTableName, loadPropertiesEagerly, lookahead, closeConnectionOnTransactionEnd,
+                cacheStatements);
     }
 
     @Override
@@ -301,7 +321,8 @@ public final class SqlGraph implements ThreadedTransactionalGraph {
                 return null;
             }
             try (ResultSet rs = stmt.getGeneratedKeys()) {
-                Vertex ret = cache(statements.fromVertexResultSet(rs));
+                SqlVertex ret = statements.fromVertexResultSet(rs);
+                vertexCache.put(ret.getId(), ret);
                 dirty = true;
                 return ret;
             }
@@ -311,29 +332,50 @@ public final class SqlGraph implements ThreadedTransactionalGraph {
     }
 
     @Override
-    public synchronized SqlVertex getVertex(Object id) {
+    public SqlVertex getVertex(Object id) {
         Long realId = getId(id);
 
         if (realId == null) {
             return null;
         }
-
-        WeakReference<SqlVertex> ref = vertexCache.get(realId);
-
-        SqlVertex v = ref == null ? null : ref.get();
-        if (v != null) {
-            return v;
+        try {
+            return vertexCache.get(realId);
+        } catch (ExecutionException e) {
+            throw new SqlGraphException(e);
         }
+    }
 
+    private synchronized SqlVertex getVertex(Long id) {
         ensureConnection();
         try {
-            PreparedStatement stmt = statements.getGetVertex(realId);
-            if (!stmt.execute()) {
-                return null;
+            if (isLookahead()) {
+                //todo: fetch the vertex neighborhood (locality)
             }
+            if (isLoadPropertiesEagerly()) {
+                PreparedStatement stmt = statements.getGetVertexProperties(id, getVertexPropertiesTableName());
+                HashMap<String, Object> properties = new HashMap<>();
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        int valueTypeInt = rs.getInt(4);
+                        ValueType valueType = ValueType.values()[valueTypeInt];
+                        Object val = valueType.convertFromDBType(rs.getObject(valueType.isNumeric() ? 3 : 2));
+                        String name = rs.getString(1);
+                        properties.put(name, val);
+                    }
+                }
 
-            try (ResultSet rs = stmt.getResultSet()) {
-                return cache(statements.fromVertexResultSet(rs));
+                SqlVertex vertex = new SqlVertex(this, id);
+                vertex.cacheProperties(properties);
+                return vertex;
+            } else {
+                PreparedStatement stmt = statements.getGetVertex(id);
+                if (!stmt.execute()) {
+                    return null;
+                }
+
+                try (ResultSet rs = stmt.getResultSet()) {
+                    return statements.fromVertexResultSet(rs);
+                }
             }
         } catch (SQLException e) {
             throw new SqlGraphException(e);
@@ -348,7 +390,7 @@ public final class SqlGraph implements ThreadedTransactionalGraph {
             if (stmt.executeUpdate() == 0) {
                 throw new IllegalStateException("Vertex with id " + vertex.getId() + " doesn't exist.");
             }
-            vertexCache.remove(vertex.getId());
+            vertexCache.invalidate(vertex.getId());
             dirty = true;
         } catch (SQLException e) {
             throw new SqlGraphException(e);
@@ -535,6 +577,10 @@ public final class SqlGraph implements ThreadedTransactionalGraph {
         return loadPropertiesEagerly;
     }
 
+    boolean isLookahead() {
+        return lookahead;
+    }
+
     boolean isCacheStatements() {
         return cacheStatements;
     }
@@ -567,14 +613,6 @@ public final class SqlGraph implements ThreadedTransactionalGraph {
         } else {
             return null;
         }
-    }
-
-    private SqlVertex cache(SqlVertex v) {
-        if (v != null) {
-            vertexCache.put(v.getId(), new WeakReference<>(v));
-        }
-
-        return v;
     }
 
     private void accountForTransactionEnd() throws SQLException {

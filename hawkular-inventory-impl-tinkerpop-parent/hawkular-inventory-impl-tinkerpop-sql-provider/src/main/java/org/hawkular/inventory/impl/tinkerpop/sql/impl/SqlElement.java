@@ -86,37 +86,40 @@ abstract class SqlElement implements Element {
 
     private synchronized void cacheProperties() {
         if (cachedProperties == null || transactionCountAtCacheCreation != graph.getTransactionCount()) {
-            String sql = "SELECT name, string_value, numeric_value, value_type FROM " + getPropertiesTableName()
-                    + " WHERE "
-                    + getPropertyTableElementIdName() + " = ?";
+            cacheProperties(getProperties());
+        }
+    }
 
-            cachedProperties = new HashMap<>();
+    private HashMap<String, Object> getProperties() {
+        HashMap<String, Object> properties = new HashMap<>();
 
-            synchronized (graph) {
-                transactionCountAtCacheCreation = graph.getTransactionCount();
-                Log.LOG.info("Caching properties.");
+        synchronized (graph) {
+            try {
+                PreparedStatement stmt = graph.getStatements().getGetElelementProperties(id,
+                        getPropertiesTableName(), getPropertyTableElementIdName());
 
-                try {
-                    PreparedStatement stmt = graph.getStatements().get(sql);
-                    stmt.setLong(1, id);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        int valueTypeInt = rs.getInt(4);
+                        ValueType valueType = ValueType.values()[valueTypeInt];
 
-                    try (ResultSet rs = stmt.executeQuery()) {
-                        while (rs.next()) {
-                            int valueTypeInt = rs.getInt(4);
-                            ValueType valueType = ValueType.values()[valueTypeInt];
+                        Object val = valueType.convertFromDBType(rs.getObject(valueType.isNumeric() ? 3 : 2));
+                        String name = rs.getString(1);
 
-                            Object val = valueType.convertFromDBType(rs.getObject(valueType.isNumeric() ? 3 : 2));
-                            String name = rs.getString(1);
-
-                            cachedProperties.put(name, val);
-                        }
+                        properties.put(name, val);
                     }
-
-                } catch (SQLException e) {
-                    throw new SqlGraphException(e);
                 }
+
+            } catch (SQLException e) {
+                throw new SqlGraphException(e);
             }
         }
+        return properties;
+    }
+
+    public void cacheProperties(HashMap<String, Object> cachedProperties) {
+        this.cachedProperties = cachedProperties;
+        transactionCountAtCacheCreation = graph.getTransactionCount();
     }
 
     @Override

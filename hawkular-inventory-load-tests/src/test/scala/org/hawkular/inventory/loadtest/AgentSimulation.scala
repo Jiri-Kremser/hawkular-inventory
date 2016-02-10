@@ -71,7 +71,8 @@ class AgentSimulation extends Simulation with Helpers {
     .pause(1 seconds)
     .exec(createSomeResourceType)
 
-  val loadTests = NTimesHawkularInventory.getAllScenarios().exec(FakeDataScenarios.getAllScenarios())
+  //val loadTests = NTimesHawkularInventory.getAllScenarios().exec(FakeDataScenarios.getAllScenarios())
+  val loadTests = NTimesHawkularInventory.getAllScenarios()
 
   setUp(
     setupScenario.inject(atOnceUsers(1)),

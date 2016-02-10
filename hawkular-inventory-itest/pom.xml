@@ -87,7 +87,7 @@
         <hawkular.agent.enabled>false</hawkular.agent.enabled>
         <hawkular.log>INFO</hawkular.log>
         <hawkular.log.inventory>INFO</hawkular.log.inventory>
-        <hawkular.log.inventory.rest.requests>INFO</hawkular.log.inventory.rest.requests>
+        <hawkular.log.inventory.rest.requests>DEBUG</hawkular.log.inventory.rest.requests>
         <hawkular.log.nest>INFO</hawkular.log.nest>
         <hawkular.log.ejb3>WARN</hawkular.log.ejb3>
         <http.log>ERROR</http.log>

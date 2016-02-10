@@ -60,6 +60,22 @@ final class Statements {
     public PreparedStatement getGetVertex(long id) throws SQLException {
         String sql = "SELECT id FROM vertices WHERE id = ?";
         PreparedStatement stmt = get(sql);
+        return stmt;
+    }
+
+    public PreparedStatement getGetVertexProperties(long id, String tableName) throws SQLException {
+        return getGetElelementProperties(id, tableName, SqlVertex.getPropertyTableForeignKey());
+    }
+
+    public PreparedStatement getGetEdgeProperties(long id, String tableName) throws SQLException {
+        return getGetElelementProperties(id, tableName, SqlEdge.getPropertyTableForeignKey());
+    }
+
+    public PreparedStatement getGetElelementProperties(long id, String tableName, String idName) throws SQLException {
+        String sql = String.format("SELECT name, string_value, numeric_value, value_type FROM %s WHERE %s = ?",
+                tableName, idName);
+
+        PreparedStatement stmt = get(sql);
         stmt.setLong(1, id);
         return stmt;
     }

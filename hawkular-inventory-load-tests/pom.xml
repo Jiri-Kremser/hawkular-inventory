@@ -145,8 +145,11 @@
                 <javaOpt>-Dhawkular.log.inventory.rest.requests=${hawkular.log.inventory.rest.requests}</javaOpt>
                 <javaOpt>-Dhawkular.log.nest=${hawkular.log.nest}</javaOpt>
                 <javaOpt>-Dhawkular.log.ejb3=${hawkular.log.ejb3}</javaOpt>
-                <javaOpt>-Xdebug</javaOpt>
-                <javaOpt>-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y</javaOpt>
+<!--                <javaOpt>-Djboss.modules.system.pkgs=com.jprofiler</javaOpt>-->
+                <!--<javaOpt>-agentlib:jprofilerti=port=8849</javaOpt>-->
+                <!--<javaOpt>-Xbootclasspath/a:/home/jkremser/install/jprofiler9/bin/agent.jar</javaOpt>-->
+<!--                <javaOpt>-Xdebug</javaOpt>
+                <javaOpt>-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y</javaOpt>-->
               </javaOpts>
             </configuration>
             <executions>
